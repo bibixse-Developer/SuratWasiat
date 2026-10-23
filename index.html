@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Surat Wasiat Digital - Cyber Vault</title>
+    <title>Kotak Pesan Terakhir - Surat Wasiat Digital</title>
     <style>
         /* === BASE STYLES === */
         * {
@@ -19,6 +19,51 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+        }
+
+        /* === LOADING SCREEN OVERLAY === */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0b0f19;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            transition: opacity 0.4s ease;
+        }
+
+        .spinner {
+            border: 4px solid #1e293b;
+            border-top: 4px solid #06b6d4;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #06b6d4;
+            letter-spacing: 1px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .loading-subtext {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin-top: 8px;
         }
 
         /* === AUTH SCREENS (LOGIN & REGISTER) === */
@@ -138,7 +183,7 @@
         }
 
         .header-title {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
             color: #06b6d4;
             display: flex;
@@ -211,7 +256,13 @@
         .card-title {
             font-size: 1.1rem;
             color: #f8fafc;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
+        }
+
+        .card-author {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 12px;
         }
 
         .card-desc-secret {
@@ -285,27 +336,34 @@
 </head>
 <body>
 
+    <!-- LOADING OVERLAY -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loading-title">Menghubungkan ke Brankas...</div>
+        <div class="loading-subtext" id="loading-subtitle">Memuat data dari database cloud</div>
+    </div>
+
     <!-- SCREEN 1: LOGIN -->
-    <div id="login-screen" class="auth-screen">
+    <div id="login-screen" class="auth-screen" style="display: none;">
         <div class="login-box">
-            <h2>🔒 CYBER VAULT</h2>
-            <p>Sistem Surat Wasiat Digital Terproteksi</p>
+            <h2>SURAT WASIAT DIGITAL</h2>
+            <p>Tempat menyimpan pesan terakhir & rahasia penting sebelum akunmu 'offline' selamanya</p>
             
             <form onsubmit="handleLogin(event)">
                 <div class="form-group">
                     <label>Username</label>
-                    <input type="text" id="login-user" required placeholder="Masukkan username...">
+                    <input type="text" id="login-user" required placeholder="Ketik username kamu...">
                 </div>
                 <div class="form-group">
-                    <label>Password</label>
+                    <label>Kata Sandi Akun</label>
                     <input type="password" id="login-pass" required placeholder="••••••••">
                 </div>
-                <p id="login-error" style="color: #ef4444; font-size: 0.8rem; margin-bottom: 10px; display: none;">⚠️ Username atau password salah!</p>
-                <button type="submit" class="btn btn-full">Masuk Ke Vault</button>
+                <p id="login-error" style="color: #ef4444; font-size: 0.8rem; margin-bottom: 10px; display: none;">❌ Password Salah</p>
+                <button type="submit" class="btn btn-full">Login</button>
             </form>
 
             <p style="margin-top: 18px; font-size: 0.85rem; color: #94a3b8;">
-                Tidak punya akun? <a onclick="showRegister(event)" class="blue-link">Daftar</a>
+                Belum punya akun? <a onclick="showRegister(event)" class="blue-link">Daftar sekarang</a>
             </p>
         </div>
     </div>
@@ -313,24 +371,24 @@
     <!-- SCREEN 1.5: REGISTER -->
     <div id="register-screen" class="auth-screen" style="display: none;">
         <div class="login-box">
-            <h2>📝 BUAT AKUN</h2>
-            <p>Daftarkan akun baru untuk akses Vault</p>
+            <h2>DAFTAR AKUN BARU</h2>
+            <p>Buat akun dulu biar kamu bisa mulai menulis dan menyimpan surat wasiatmu sendiri</p>
             
             <form onsubmit="handleRegister(event)">
                 <div class="form-group">
                     <label>Username Baru</label>
-                    <input type="text" id="reg-user" required placeholder="Buat username...">
+                    <input type="text" id="reg-user" required maxlength="20" placeholder="Isi Username">
                 </div>
                 <div class="form-group">
-                    <label>Password Baru</label>
-                    <input type="password" id="reg-pass" required placeholder="••••••••">
+                    <label>Bikin Kata Sandi</label>
+                    <input type="password" id="reg-pass" required placeholder="Buat kata sandi...">
                 </div>
                 <p id="reg-error" style="color: #ef4444; font-size: 0.8rem; margin-bottom: 10px; display: none;"></p>
-                <button type="submit" class="btn btn-full">Daftar Akun</button>
+                <button type="submit" class="btn btn-full">Daftar akun</button>
             </form>
 
             <p style="margin-top: 18px; font-size: 0.85rem; color: #94a3b8;">
-                Sudah punya akun? <a onclick="showLogin(event)" class="blue-link">Login</a>
+                Sudah punya akun? <a onclick="showLogin(event)" class="blue-link">Masuk ke sini</a>
             </p>
         </div>
     </div>
@@ -339,16 +397,17 @@
     <div id="dashboard-screen" style="display: none;">
         <header>
             <div class="header-title">
-                <span>🛡️ Vault Wasiat Digital</span>
+                <span>🕯️ Surat Wasiat Digital</span>
+                <span id="welcome-user" style="color: #94a3b8; font-size: 0.85rem; font-weight: normal;"></span>
             </div>
             <div style="display: flex; align-items: center; gap: 15px;">
-                <button class="btn-add-plus" onclick="openForm()" title="Tambah Surat Wasiat">+</button>
-                <button class="btn btn-outline" onclick="handleLogout()">Logout</button>
+                <button class="btn-add-plus" onclick="openForm()" title="Tulis Surat Wasiat Baru">+</button>
+                <button class="btn btn-outline" onclick="handleLogout()">Keluar</button>
             </div>
         </header>
 
         <main>
-            <h2 style="color: #f8fafc; font-size: 1.3rem;">Daftar Surat Wasiat Tersimpan</h2>
+            <h2 style="color: #f8fafc; font-size: 1.3rem;">Daftar Surat Wasiat & Pesan Rahasia</h2>
             <div id="wasiat-container" class="grid-wasiat">
                 <!-- Card dirender via JavaScript -->
             </div>
@@ -357,21 +416,27 @@
 
     <!-- MODAL FORM TAMBAH / EDIT WASIAT -->
     <dialog id="modal-form" style="max-width: 600px;">
-        <h3 id="form-title">Buat Surat Wasiat Baru</h3>
+        <h3 id="form-title">Tulis Surat Wasiat Baru</h3>
         
         <form onsubmit="saveWasiat(event)">
             <input type="hidden" id="form-id">
 
             <div class="form-group">
-                <label>Judul Wasiat</label>
-                <input type="text" id="form-judul" required placeholder="Contoh: Rahasia Akun & Akses Keuangan">
+                <label>Judul Surat Wasiat</label>
+                <input type="text" id="form-judul" required placeholder="Contoh: warisan akun dan lain nya">
+            </div>
+
+            <!-- SETTING SAMARKAN NAMA -->
+            <div class="form-group" style="display: flex; align-items: center; gap: 10px; background: #090d16; padding: 10px 14px; border: 1px solid #1e293b; border-radius: 6px;">
+                <input type="checkbox" id="form-is-masked" style="width: 18px; height: 18px; cursor: pointer;">
+                <label for="form-is-masked" style="margin-bottom: 0; color: #cbd5e1; cursor: pointer; font-size: 0.85rem;">Mode Anonim/inconigto</label>
             </div>
 
             <!-- SECTION PASSWORDS DYNAMIC -->
             <div style="margin-bottom: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <label style="color: #06b6d4; font-size: 0.8rem; font-weight: bold; text-transform: uppercase;">Password Berlapis</label>
-                    <button type="button" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.75rem;" onclick="addPasswordInput()">+ Tambah Password</button>
+                    <label style="color: #06b6d4; font-size: 0.8rem; font-weight: bold; text-transform: uppercase;">Kunci Password Berlapis</label>
+                    <button type="button" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.75rem;" onclick="addPasswordInput()">+ Tambah Ketegori Password</button>
                 </div>
                 <div id="passwords-container">
                     <!-- Dynamic password fields -->
@@ -381,8 +446,8 @@
             <!-- SECTION DESKRIPSI DYNAMIC -->
             <div style="margin-bottom: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <label style="color: #34d399; font-size: 0.8rem; font-weight: bold; text-transform: uppercase;">Blok Deskripsi / Pesan Rahasia</label>
-                    <button type="button" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.75rem;" onclick="addDeskripsiInput()">+ Tambah Deskripsi</button>
+                    <label style="color: #34d399; font-size: 0.8rem; font-weight: bold; text-transform: uppercase;">Isi Pesan / Catatan Wasiat Rahasia</label>
+                    <button type="button" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.75rem;" onclick="addDeskripsiInput()">+ Tambah Kategori Deskripsi</button>
                 </div>
                 <div id="deskripsi-container">
                     <!-- Dynamic description fields -->
@@ -391,25 +456,25 @@
 
             <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
                 <button type="button" class="btn btn-outline" onclick="closeModal('modal-form')">Batal</button>
-                <button type="submit" class="btn">Simpan Wasiat</button>
+                <button type="submit" class="btn">Simpan</button>
             </div>
         </form>
     </dialog>
 
     <!-- MODAL INPUT PASSWORD BERLAPIS SAAT MEMBUKA -->
     <dialog id="modal-unlock">
-        <h3 style="text-align: center;">🔐 Proteksi Terkunci</h3>
+        <h3 style="text-align: center;">Surat Berpassword</h3>
         <p id="unlock-step-info" style="text-align: center; color: #38bdf8; font-weight: bold; margin-bottom: 15px;">Langkah 1 dari 1</p>
         
         <div class="form-group">
-            <label>Masukkan Password</label>
-            <input type="password" id="unlock-input" placeholder="••••••••">
-            <p id="unlock-error" style="color: #ef4444; font-size: 0.8rem; margin-top: 5px; display: none;">⚠️ Password salah! Coba lagi.</p>
+            <label>Masukkan Kunci Password</label>
+            <input type="password" id="unlock-input" placeholder="Ketik kata kunci untuk membukanya...">
+            <p id="unlock-error" style="color: #ef4444; font-size: 0.8rem; margin-top: 5px; display: none;">Salah kunci! Tebak lagi atau tanya sama yang bikin surat.</p>
         </div>
 
         <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
             <button class="btn btn-outline" onclick="closeModal('modal-unlock')">Batal</button>
-            <button class="btn" onclick="verifyStepPassword()">Lanjutkan</button>
+            <button class="btn" onclick="verifyStepPassword()">Buka</button>
         </div>
     </dialog>
 
@@ -422,45 +487,101 @@
         </div>
 
         <div style="text-align: right; margin-top: 20px;">
-            <button class="btn btn-outline" onclick="closeModal('modal-view')">Tutup</button>
+            <button class="btn btn-outline" onclick="closeModal('modal-view')">Tutup Surat</button>
         </div>
     </dialog>
 
-    <!-- JAVASCRIPT LOGIC -->
-    <script>
-        let wasiatData = JSON.parse(localStorage.getItem('wasiat_db_cyber_v4') || '[]');
-        let usersData = JSON.parse(localStorage.getItem('wasiat_users') || '[]');
+    <!-- FIREBASE REALTIME DATABASE SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { 
+            getDatabase, 
+            ref, 
+            set, 
+            get, 
+            child, 
+            push, 
+            update, 
+            remove 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // Konfigurasi Firebase Anda
+        const firebaseConfig = {
+            apiKey: "AIzaSyBLFwlsOkzdFXixFFAt31GOPjfBHFv_qww",
+            authDomain: "surat-wasiat.firebaseapp.com",
+            databaseURL: "https://surat-wasiat-default-rtdb.firebaseio.com",
+            projectId: "surat-wasiat",
+            storageBucket: "surat-wasiat.firebasestorage.app",
+            messagingSenderId: "520725715356",
+            appId: "1:520725715356:web:86ade6893f6c0df0481059"
+        };
+
+        // Initialize Firebase Realtime Database
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        let wasiatData = [];
+        let currentUsername = localStorage.getItem('sw_active_username') || null;
         let activeWasiat = null;
         let currentPassStep = 0;
 
-        // Data sampel awal jika kosong
-        if (wasiatData.length === 0) {
-            wasiatData = [
-                {
-                    id: 1,
-                    judul: 'Akses Keuangan & Dompet Digital',
-                    passwords: ['1234', 'kucing'],
-                    deskripsi: [
-                        'Password 1 = Tanggal lahir, Password 2 = Nama peliharaan.',
-                        'Situs penarikan dana: https://indodax.com atau https://binance.com'
-                    ]
-                }
-            ];
-            localStorage.setItem('wasiat_db_cyber_v4', JSON.stringify(wasiatData));
+        // FUNGSI KONTROL LOADING
+        function showLoading(title = "Menghubungkan ke Brankas...", subtitle = "Memuat data dari database cloud") {
+            const overlay = document.getElementById('loading-overlay');
+            document.getElementById('loading-title').innerText = title;
+            document.getElementById('loading-subtitle').innerText = subtitle;
+            overlay.style.display = 'flex';
+            overlay.style.opacity = '1';
         }
 
-        // Buat akun default jika belum ada sama sekali
-        if (usersData.length === 0) {
-            usersData.push({ username: 'admin', password: '123' });
-            localStorage.setItem('wasiat_users', JSON.stringify(usersData));
+        function hideLoading() {
+            const overlay = document.getElementById('loading-overlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 400);
         }
 
-        function saveToStorage() {
-            localStorage.setItem('wasiat_db_cyber_v4', JSON.stringify(wasiatData));
+        // Jalankan Simulasi Loading Awal
+        window.addEventListener('DOMContentLoaded', async () => {
+            showLoading("Mempersiapkan Sistem...", "Memuat konfigurasi keamanan & database");
+            
+            await new Promise(resolve => setTimeout(resolve, 3500));
+
+            if (currentUsername) {
+                showDashboardScreen();
+            } else {
+                showLoginScreen();
+            }
+        });
+
+        function showDashboardScreen() {
+            document.getElementById('welcome-user').innerText = `(Penulis: ${currentUsername})`;
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('register-screen').style.display = 'none';
+            document.getElementById('dashboard-screen').style.display = 'block';
+            loadWasiatFromFirebase();
+        }
+
+        function showLoginScreen() {
+            document.getElementById('dashboard-screen').style.display = 'none';
+            document.getElementById('register-screen').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'flex';
+            hideLoading();
+        }
+
+        // FUNGSI MASKING USERNAME (e.g. Siti Rukayah -> S*********h)
+        window.maskUsername = function(username) {
+            if (!username) return '***';
+            const len = username.length;
+            if (len <= 2) {
+                return username[0] + '*';
+            }
+            return username[0] + '*'.repeat(len - 2) + username[len - 1];
         }
 
         // NAVIGASI LOGIN / REGISTER
-        function showRegister(e) {
+        window.showRegister = function(e) {
             e.preventDefault();
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('register-screen').style.display = 'flex';
@@ -469,7 +590,7 @@
             document.getElementById('reg-error').style.display = 'none';
         }
 
-        function showLogin(e) {
+        window.showLogin = function(e) {
             e.preventDefault();
             document.getElementById('register-screen').style.display = 'none';
             document.getElementById('login-screen').style.display = 'flex';
@@ -479,53 +600,134 @@
         }
 
         // REGISTER HANDLER
-        function handleRegister(e) {
+        window.handleRegister = async function(e) {
             e.preventDefault();
-            const u = document.getElementById('reg-user').value.trim();
-            const p = document.getElementById('reg-pass').value.trim();
+            const rawUsername = document.getElementById('reg-user').value.trim();
+            const pass = document.getElementById('reg-pass').value.trim();
             const err = document.getElementById('reg-error');
 
-            const existing = usersData.find(user => user.username === u);
-            if (existing) {
-                err.innerText = "⚠️ Username sudah terpakai! Gunakan yang lain.";
+            if (rawUsername.length < 3) {
+                err.innerText = "Username terlalu pendek! Minimal harus 3 karakter.";
                 err.style.display = 'block';
                 return;
             }
 
-            usersData.push({ username: u, password: p });
-            localStorage.setItem('wasiat_users', JSON.stringify(usersData));
-            alert("Pendaftaran berhasil! Silakan login menggunakan akun baru.");
-            showLogin(e);
-        }
+            // Validasi Maksimal 20 Karakter
+            if (rawUsername.length > 20) {
+                err.innerText = "Username terlalu panjang! Maksimal 20 karakter.";
+                err.style.display = 'block';
+                return;
+            }
 
-        // LOGIN SYSTEM
-        function handleLogin(e) {
-            e.preventDefault();
-            const u = document.getElementById('login-user').value.trim();
-            const p = document.getElementById('login-pass').value.trim();
-            const err = document.getElementById('login-error');
+            // Regex untuk memblokir emoji dan karakter khusus/non-ASCII
+            const emojiRegex = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u;
+            const validCharsRegex = /^[a-zA-Z0-9_.\s]+$/;
 
-            const validUser = usersData.find(user => user.username === u && user.password === p);
+            if (emojiRegex.test(rawUsername) || !validCharsRegex.test(rawUsername)) {
+                err.innerText = "Username tidak boleh menggunakan emoji atau simbol khusus!";
+                err.style.display = 'block';
+                return;
+            }
 
-            if (validUser) {
-                err.style.display = 'none';
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('dashboard-screen').style.display = 'block';
-                renderWasiatList();
-            } else {
+            const userKey = rawUsername.toLowerCase().replace(/[.#$\[\]]/g, "_");
+
+            showLoading("Mendaftarkan Akun...", "Menyimpan kredensial ke server database");
+
+            try {
+                const dbRef = ref(db);
+                const snapshot = await get(child(dbRef, `users/${userKey}`));
+                
+                if (snapshot.exists()) {
+                    hideLoading();
+                    err.innerText = "⚠️ Username tersebut sudah terdaftar! Gunakan nama lain.";
+                    err.style.display = 'block';
+                    return;
+                }
+
+                await set(ref(db, `users/${userKey}`), {
+                    username: rawUsername,
+                    password: pass
+                });
+
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                hideLoading();
+
+                alert("Pendaftaran berhasil! Silakan login menggunakan akun baru.");
+                showLogin(e);
+            } catch (error) {
+                hideLoading();
+                err.innerText = "⚠️ Gagal mendaftar: " + error.message;
                 err.style.display = 'block';
             }
         }
 
-        function handleLogout() {
-            document.getElementById('dashboard-screen').style.display = 'none';
-            document.getElementById('login-screen').style.display = 'flex';
-            document.getElementById('login-user').value = '';
-            document.getElementById('login-pass').value = '';
+        // LOGIN SYSTEM
+        window.handleLogin = async function(e) {
+            e.preventDefault();
+            const rawUsername = document.getElementById('login-user').value.trim();
+            const pass = document.getElementById('login-pass').value.trim();
+            const err = document.getElementById('login-error');
+            const userKey = rawUsername.toLowerCase().replace(/[.#$\[\]]/g, "_");
+
+            showLoading("Memverifikasi Akun...", "Mencocokkan data dengan server database");
+
+            try {
+                const dbRef = ref(db);
+                const snapshot = await get(child(dbRef, `users/${userKey}`));
+
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                if (snapshot.exists() && snapshot.val().password === pass) {
+                    currentUsername = snapshot.val().username;
+                    localStorage.setItem('sw_active_username', currentUsername);
+                    err.style.display = 'none';
+                    showDashboardScreen();
+                } else {
+                    hideLoading();
+                    err.style.display = 'block';
+                }
+            } catch (error) {
+                hideLoading();
+                err.style.display = 'block';
+            }
+        }
+
+        window.handleLogout = function() {
+            showLoading("Keluar dari Sesi...", "Membersihkan sesi lokal");
+            setTimeout(() => {
+                localStorage.removeItem('sw_active_username');
+                currentUsername = null;
+                hideLoading();
+                showLoginScreen();
+            }, 1000);
+        }
+
+        // LOAD DATA DARI FIREBASE REALTIME DATABASE
+        async function loadWasiatFromFirebase() {
+            try {
+                showLoading("Menyinkronkan Database...", "Mengambil daftar surat wasiat terbaru");
+                const dbRef = ref(db);
+                const snapshot = await get(child(dbRef, "wasiats"));
+                
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                wasiatData = [];
+                if (snapshot.exists()) {
+                    const dataObj = snapshot.val();
+                    Object.keys(dataObj).forEach(key => {
+                        wasiatData.push({ id: key, ...dataObj[key] });
+                    });
+                }
+                renderWasiatList();
+                hideLoading();
+            } catch (error) {
+                console.error("Gagal memuat data:", error);
+                hideLoading();
+            }
         }
 
         // AUTO-DETECT URL MENJADI LINK BIRU BISA DIKLIK
-        function parseLinks(text) {
+        window.parseLinks = function(text) {
             const urlRegex = /(https?:\/\/[^\s]+)/g;
             return text.replace(urlRegex, function(url) {
                 return `<a href="${url}" target="_blank" class="blue-link">${url}</a>`;
@@ -533,97 +735,107 @@
         }
 
         // RENDER LIST WASIAT
-        function renderWasiatList() {
+        window.renderWasiatList = function() {
             const container = document.getElementById('wasiat-container');
             container.innerHTML = '';
 
             if (wasiatData.length === 0) {
-                container.innerHTML = '<p style="color: #64748b;">Belum ada surat wasiat tersimpan.</p>';
+                container.innerHTML = '<p style="color: #64748b;"> belum ada surat wasiat nih tambah yok dgn memencet tanda + di atas</p>';
                 return;
             }
 
             wasiatData.forEach(item => {
+                const isOwner = (item.createdBy === currentUsername);
+                const rawAuthor = item.createdBy || 'Seseorang';
+                const authorDisplay = item.isMasked ? window.maskUsername(rawAuthor) : rawAuthor;
                 const card = document.createElement('div');
                 card.className = 'card-wasiat';
 
                 card.innerHTML = `
-                    <span class="badge">
-                        🔒 ${item.passwords.length} Layer Pass
-                    </span>
+                    <span class="badge">🔒 ${item.passwords ? item.passwords.length : 0} Lapis Kunci</span>
                     <h3 class="card-title">${item.judul}</h3>
-                    <p class="card-desc-secret">🔒 [TERKUNCI / PESAN RAHASIA]</p>
+                    <p class="card-author">Ditulis oleh: <b>${authorDisplay}</b></p>
+                    <p class="card-desc-secret">Surat Wasiat</p>
                     
                     <div class="card-actions">
-                        <button class="btn btn-full" onclick="clickWasiat(${item.id})">Buka</button>
-                        <button class="btn btn-outline" onclick="editWasiat(${item.id})">Edit</button>
-                        <button class="btn btn-danger" onclick="deleteWasiat(${item.id})">Hapus</button>
+                        <button class="btn btn-full" onclick="clickWasiat('${item.id}')">Buka Surat</button>
+                        ${isOwner ? `
+                            <button class="btn btn-outline" onclick="editWasiat('${item.id}')">Edit</button>
+                            <button class="btn btn-danger" onclick="deleteWasiat('${item.id}')">Hapus</button>
+                        ` : ''}
                     </div>
                 `;
                 container.appendChild(card);
             });
         }
 
-        function closeModal(modalId) {
+        window.closeModal = function(modalId) {
             document.getElementById(modalId).close();
         }
 
         // FORM TAMBAH / EDIT
-        function openForm(editData = null) {
+        window.openForm = function(id = null) {
             const passContainer = document.getElementById('passwords-container');
             const deskContainer = document.getElementById('deskripsi-container');
 
             passContainer.innerHTML = '';
             deskContainer.innerHTML = '';
 
-            if (editData) {
-                document.getElementById('form-title').innerText = "Edit Surat Wasiat";
+            if (id) {
+                const editData = wasiatData.find(w => w.id === id);
+                if (!editData) return;
+
+                document.getElementById('form-title').innerText = "Edit Isi Surat Wasiat";
                 document.getElementById('form-id').value = editData.id;
                 document.getElementById('form-judul').value = editData.judul;
+                document.getElementById('form-is-masked').checked = editData.isMasked || false;
 
-                editData.passwords.forEach(p => addPasswordInput(p));
-                editData.deskripsi.forEach(d => addDeskripsiInput(d));
+                if (editData.passwords) editData.passwords.forEach(p => window.addPasswordInput(p));
+                if (editData.deskripsi) editData.deskripsi.forEach(d => window.addDeskripsiInput(d));
             } else {
-                document.getElementById('form-title').innerText = "Buat Surat Wasiat Baru";
+                document.getElementById('form-title').innerText = "Tulis Surat Wasiat Baru";
                 document.getElementById('form-id').value = '';
                 document.getElementById('form-judul').value = '';
+                document.getElementById('form-is-masked').checked = false;
 
-                addPasswordInput();
-                addDeskripsiInput();
+                window.addPasswordInput();
+                window.addDeskripsiInput();
             }
 
             document.getElementById('modal-form').showModal();
         }
 
         // DINAMIS: INPUT PASSWORD
-        function addPasswordInput(val = '') {
+        window.addPasswordInput = function(val = '') {
             const container = document.getElementById('passwords-container');
             const index = container.children.length + 1;
             const div = document.createElement('div');
             div.className = 'dynamic-item';
             div.innerHTML = `
-                <input type="text" class="pass-val" value="${val}" required placeholder="Password ke-${index}">
-                <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">X</button>
+                <input type="text" class="pass-val" value="${val}" required placeholder="Kata kunci / password lapis ke-${index}">
+                <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">Hapus</button>
             `;
             container.appendChild(div);
         }
 
         // DINAMIS: INPUT DESKRIPSI
-        function addDeskripsiInput(val = '') {
+        window.addDeskripsiInput = function(val = '') {
             const container = document.getElementById('deskripsi-container');
             const div = document.createElement('div');
             div.className = 'dynamic-item';
             div.innerHTML = `
-                <textarea class="desk-val" rows="2" required placeholder="Tulis deskripsi rahasia atau masukan link web (https://...)">${val}</textarea>
-                <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">X</button>
+                <textarea class="desk-val" rows="2" required placeholder="Tuliskan pesan rahasia, petunjuk, atau link website (https://...)">${val}</textarea>
+                <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">Hapus</button>
             `;
             container.appendChild(div);
         }
 
-        // SIMPAN DATA WASIAT
-        function saveWasiat(e) {
+        // SIMPAN DATA KE REALTIME DATABASE
+        window.saveWasiat = async function(e) {
             e.preventDefault();
             const id = document.getElementById('form-id').value;
             const judul = document.getElementById('form-judul').value;
+            const isMasked = document.getElementById('form-is-masked').checked;
 
             const passElements = document.querySelectorAll('.pass-val');
             const deskElements = document.querySelectorAll('.desk-val');
@@ -631,46 +843,57 @@
             const passwords = Array.from(passElements).map(el => el.value.trim()).filter(v => v !== '');
             const deskripsi = Array.from(deskElements).map(el => el.value.trim()).filter(v => v !== '');
 
-            if (id) {
-                const index = wasiatData.findIndex(w => w.id == id);
-                if (index !== -1) {
-                    wasiatData[index] = { id: parseInt(id), judul, passwords, deskripsi };
-                }
-            } else {
-                wasiatData.push({
-                    id: Date.now(),
-                    judul,
-                    passwords,
-                    deskripsi
-                });
-            }
+            showLoading("Menyimpan Surat...", "Mengirim data wasiat ke cloud database");
 
-            saveToStorage();
-            renderWasiatList();
-            closeModal('modal-form');
+            try {
+                if (id) {
+                    await update(ref(db, `wasiats/${id}`), {
+                        judul,
+                        passwords,
+                        deskripsi,
+                        isMasked
+                    });
+                } else {
+                    const newWasiatRef = push(ref(db, 'wasiats'));
+                    await set(newWasiatRef, {
+                        judul,
+                        passwords,
+                        deskripsi,
+                        isMasked,
+                        createdBy: currentUsername,
+                        createdAt: Date.now()
+                    });
+                }
+
+                window.closeModal('modal-form');
+                await loadWasiatFromFirebase();
+            } catch (error) {
+                hideLoading();
+                alert("Gagal menyimpan data ke database: " + error.message);
+            }
         }
 
         // PROSES BUKA SURAT
-        function clickWasiat(id) {
+        window.clickWasiat = function(id) {
             activeWasiat = wasiatData.find(w => w.id === id);
             if (!activeWasiat) return;
 
-            if (activeWasiat.passwords.length > 0) {
+            if (activeWasiat.passwords && activeWasiat.passwords.length > 0) {
                 currentPassStep = 0;
-                openUnlockModal();
+                window.openUnlockModal();
             } else {
-                showDetailWasiat();
+                window.showDetailWasiat();
             }
         }
 
-        function openUnlockModal() {
+        window.openUnlockModal = function() {
             document.getElementById('unlock-input').value = '';
             document.getElementById('unlock-error').style.display = 'none';
-            document.getElementById('unlock-step-info').innerText = `Verifikasi Password ke-${currentPassStep + 1} dari ${activeWasiat.passwords.length}`;
+            document.getElementById('unlock-step-info').innerText = `Memverifikasi Kunci Lapis Ke-${currentPassStep + 1} dari total ${activeWasiat.passwords.length} kunci`;
             document.getElementById('modal-unlock').showModal();
         }
 
-        function verifyStepPassword() {
+        window.verifyStepPassword = function() {
             const inputVal = document.getElementById('unlock-input').value.trim();
             const targetPass = activeWasiat.passwords[currentPassStep];
 
@@ -680,10 +903,10 @@
                 document.getElementById('unlock-error').style.display = 'none';
 
                 if (currentPassStep >= activeWasiat.passwords.length) {
-                    closeModal('modal-unlock');
-                    showDetailWasiat();
+                    window.closeModal('modal-unlock');
+                    window.showDetailWasiat();
                 } else {
-                    document.getElementById('unlock-step-info').innerText = `Verifikasi Password ke-${currentPassStep + 1} dari ${activeWasiat.passwords.length}`;
+                    document.getElementById('unlock-step-info').innerText = `Mantap, kunci lolos! Sekarang ketik kunci lapis ke-${currentPassStep + 1} dari ${activeWasiat.passwords.length}`;
                 }
             } else {
                 document.getElementById('unlock-error').style.display = 'block';
@@ -691,7 +914,7 @@
         }
 
         // DETAIL WASIAT VIEW
-        function showDetailWasiat() {
+        window.showDetailWasiat = function() {
             document.getElementById('view-judul').innerText = activeWasiat.judul;
             const container = document.getElementById('view-deskripsi-list');
             container.innerHTML = '';
@@ -699,25 +922,37 @@
             activeWasiat.deskripsi.forEach((text) => {
                 const div = document.createElement('div');
                 div.className = 'content-box';
-                div.innerHTML = parseLinks(text);
+                div.innerHTML = window.parseLinks(text);
                 container.appendChild(div);
             });
 
             document.getElementById('modal-view').showModal();
         }
 
-        function editWasiat(id) {
+        window.editWasiat = function(id) {
             const data = wasiatData.find(w => w.id === id);
-            if (data) {
-                openForm(data);
+            if (data && data.createdBy === currentUsername) {
+                window.openForm(id);
+            } else {
+                alert("Eits, kamu gak bisa edit surat milik orang lain ya!");
             }
         }
 
-        function deleteWasiat(id) {
-            if (confirm('Apakah kamu yakin ingin menghapus surat wasiat ini?')) {
-                wasiatData = wasiatData.filter(w => w.id !== id);
-                saveToStorage();
-                renderWasiatList();
+        window.deleteWasiat = async function(id) {
+            const data = wasiatData.find(w => w.id === id);
+            if (data && data.createdBy === currentUsername) {
+                if (confirm('Kamu yakin banget ingin menghapus surat wasiat ini dari cloud?')) {
+                    try {
+                        showLoading("Menghapus Surat...", "Menghapus data dari server");
+                        await remove(ref(db, `wasiats/${id}`));
+                        await loadWasiatFromFirebase();
+                    } catch (error) {
+                        hideLoading();
+                        alert("Gagal menghapus data: " + error.message);
+                    }
+                }
+            } else {
+                alert("Eits, kamu gak punya akses buat menghapus surat orang lain!");
             }
         }
     </script>
