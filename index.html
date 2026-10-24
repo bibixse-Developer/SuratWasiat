@@ -11,6 +11,17 @@
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        input, textarea {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
         }
 
         body {
@@ -262,7 +273,16 @@
         .card-author {
             font-size: 0.75rem;
             color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        .card-date {
+            font-size: 0.72rem;
+            color: #38bdf8;
             margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .card-desc-secret {
@@ -491,7 +511,7 @@
         </div>
     </dialog>
 
-    <!-- FIREBASE REALTIME DATABASE SDK -->
+    <!-- FIREBASE REALTIME DATABASE SDK & SECURITY SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { 
@@ -504,6 +524,35 @@
             update, 
             remove 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // === KEAMANAN: BLOKIR INSPECT & DEVELOPER TOOLS ===
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' || e.keyCode === 123) {
+                e.preventDefault();
+                return false;
+            }
+            if (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key)) {
+                e.preventDefault();
+                return false;
+            }
+            if (e.ctrlKey && ['U', 'u'].includes(e.key)) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        setInterval(function() {
+            const startTime = performance.now();
+            debugger;
+            const endTime = performance.now();
+            if (endTime - startTime > 100) {
+                document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:20vh;'>⚠️ Akses Ditolak! Developer Tools Terdeteksi.</h1>";
+            }
+        }, 1000);
 
         // Konfigurasi Firebase Anda
         const firebaseConfig = {
@@ -524,6 +573,19 @@
         let currentUsername = localStorage.getItem('sw_active_username') || null;
         let activeWasiat = null;
         let currentPassStep = 0;
+
+        // FUNGSI FORMAT TANGGAL DAN WAKTU INDONESIA
+        function formatDate(timestamp) {
+            if (!timestamp) return 'Waktu tidak terdeteksi';
+            const date = new Date(timestamp);
+            return date.toLocaleDateString('id-ID', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }) + ' WIB';
+        }
 
         // FUNGSI KONTROL LOADING
         function showLoading(title = "Menghubungkan ke Brankas...", subtitle = "Memuat data dari database cloud") {
@@ -612,14 +674,12 @@
                 return;
             }
 
-            // Validasi Maksimal 20 Karakter
             if (rawUsername.length > 20) {
                 err.innerText = "Username terlalu panjang! Maksimal 20 karakter.";
                 err.style.display = 'block';
                 return;
             }
 
-            // Regex untuk memblokir emoji dan karakter khusus/non-ASCII
             const emojiRegex = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u;
             const validCharsRegex = /^[a-zA-Z0-9_.\s]+$/;
 
@@ -748,6 +808,7 @@
                 const isOwner = (item.createdBy === currentUsername);
                 const rawAuthor = item.createdBy || 'Seseorang';
                 const authorDisplay = item.isMasked ? window.maskUsername(rawAuthor) : rawAuthor;
+                const formattedTime = formatDate(item.createdAt);
                 const card = document.createElement('div');
                 card.className = 'card-wasiat';
 
@@ -755,6 +816,7 @@
                     <span class="badge">🔒 ${item.passwords ? item.passwords.length : 0} Lapis Kunci</span>
                     <h3 class="card-title">${item.judul}</h3>
                     <p class="card-author">Ditulis oleh: <b>${authorDisplay}</b></p>
+                    <p class="card-date">🕒 ${formattedTime}</p>
                     <p class="card-desc-secret">Surat Wasiat</p>
                     
                     <div class="card-actions">
@@ -861,7 +923,7 @@
                         deskripsi,
                         isMasked,
                         createdBy: currentUsername,
-                        createdAt: Date.now()
+                        createdAt: Date.now() // Menyimpan timestamp UNIX pembuatan
                     });
                 }
 
