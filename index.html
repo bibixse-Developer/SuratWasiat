@@ -794,7 +794,7 @@
             });
         }
 
-        // RENDER LIST WASIAT
+        // RENDER LIST WASIAT (SEMUA TEKS DIBACA LANGSUNG DARI PROPERTI FIREBASE)
         window.renderWasiatList = function() {
             const container = document.getElementById('wasiat-container');
             container.innerHTML = '';
@@ -806,18 +806,27 @@
 
             wasiatData.forEach(item => {
                 const isOwner = (item.createdBy === currentUsername);
+                
+                // === SEMUA TEKS INI BISA DIEDIT LANGSUNG DI DATABASE FIREBASE (JSON) ===
                 const rawAuthor = item.createdBy || 'Seseorang';
                 const authorDisplay = item.isMasked ? window.maskUsername(rawAuthor) : rawAuthor;
-                const formattedTime = formatDate(item.createdAt);
+                
+                // Properti Firebase (kalau belum ada di database, otomatis pakai default)
+                const displayBadge = item.badgeText || `🔒 ${item.passwords ? item.passwords.length : 0} Lapis Kunci`;
+                const displayTitle = item.judul || 'Tanpa Judul';
+                const displayAuthorText = item.authorText || `Ditulis oleh: <b>${authorDisplay}</b>`;
+                const displayDateText = item.dateText || `🕒 ${formatDate(item.createdAt)}`;
+                const displayCardDesc = item.cardDesc || 'Surat Wasiat';
+
                 const card = document.createElement('div');
                 card.className = 'card-wasiat';
 
                 card.innerHTML = `
-                    <span class="badge">🔒 ${item.passwords ? item.passwords.length : 0} Lapis Kunci</span>
-                    <h3 class="card-title">${item.judul}</h3>
-                    <p class="card-author">Ditulis oleh: <b>${authorDisplay}</b></p>
-                    <p class="card-date">🕒 ${formattedTime}</p>
-                    <p class="card-desc-secret">Surat Wasiat</p>
+                    <span class="badge">${displayBadge}</span>
+                    <h3 class="card-title">${displayTitle}</h3>
+                    <p class="card-author">${displayAuthorText}</p>
+                    <p class="card-date">${displayDateText}</p>
+                    <p class="card-desc-secret">${displayCardDesc}</p>
                     
                     <div class="card-actions">
                         <button class="btn btn-full" onclick="clickWasiat('${item.id}')">Buka Surat</button>
@@ -892,7 +901,7 @@
             container.appendChild(div);
         }
 
-        // SIMPAN DATA KE REALTIME DATABASE
+        // SIMPAN DATA KE REALTIME DATABASE (MENYIMPAN PROPERTI TEKS LENGKAP)
         window.saveWasiat = async function(e) {
             e.preventDefault();
             const id = document.getElementById('form-id').value;
@@ -908,23 +917,28 @@
             showLoading("Menyimpan Surat...", "Mengirim data wasiat ke cloud database");
 
             try {
+                // Ambil data eksisting jika mode edit agar teks custom dari Firebase Console tidak tertimpa
+                const existingData = id ? wasiatData.find(w => w.id === id) : null;
+
+                const wasiatPayload = {
+                    judul,
+                    passwords,
+                    deskripsi,
+                    isMasked,
+                    // Properti teks di bawah ini tersimpan di Firebase dan bisa kamu edit langsung di Database Console kapan pun:
+                    badgeText: existingData?.badgeText || `🔒 ${passwords.length} Lapis Kunci`,
+                    authorText: existingData?.authorText || `Ditulis oleh: <b>${isMasked ? window.maskUsername(currentUsername) : currentUsername}</b>`,
+                    dateText: existingData?.dateText || `🕒 ${formatDate(Date.now())}`,
+                    cardDesc: existingData?.cardDesc || 'Surat Wasiat',
+                    createdBy: currentUsername,
+                    createdAt: existingData?.createdAt || Date.now()
+                };
+
                 if (id) {
-                    await update(ref(db, `wasiats/${id}`), {
-                        judul,
-                        passwords,
-                        deskripsi,
-                        isMasked
-                    });
+                    await update(ref(db, `wasiats/${id}`), wasiatPayload);
                 } else {
                     const newWasiatRef = push(ref(db, 'wasiats'));
-                    await set(newWasiatRef, {
-                        judul,
-                        passwords,
-                        deskripsi,
-                        isMasked,
-                        createdBy: currentUsername,
-                        createdAt: Date.now() // Menyimpan timestamp UNIX pembuatan
-                    });
+                    await set(newWasiatRef, wasiatPayload);
                 }
 
                 window.closeModal('modal-form');
